@@ -1,116 +1,54 @@
-// Wait until DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Select DOM elements as required
+// Wait for the HTML document to fully load before running the script
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Step 1: Select DOM elements
     const addButton = document.getElementById('add-task-btn');
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    // Internal array to hold tasks (strings)
-    let tasks = [];
+    // Step 2: Define the function to add a new task
+    function addTask() {
+        // Get the text from the input field and remove any extra spaces
+        const taskText = taskInput.value.trim();
 
-    /**
-     * Render the tasks array into the DOM
-     */
-    function renderTasks() {
-        // Clear current list
-        taskList.innerHTML = '';
-
-        // Create list items for each task
-        tasks.forEach((taskText, index) => {
-            const li = document.createElement('li');
-
-            // Create a span to hold the task text (keeps structure flexible)
-            const textSpan = document.createElement('span');
-            textSpan.textContent = taskText;
-
-            // Create remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'Remove';
-            removeBtn.className = 'remove-btn';
-
-            // When clicked, remove task at 'index' and update storage + UI
-            removeBtn.addEventListener('click', () => {
-                removeTask(index);
-            });
-
-            // Build and append the list item
-            li.appendChild(textSpan);
-            li.appendChild(removeBtn);
-            taskList.appendChild(li);
-        });
-    }
-
-    /**
-     * Save current tasks array to Local Storage
-     */
-    function saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-
-    /**
-     * Add a task to the list and optionally save to Local Storage.
-     * If taskText is omitted, read from the input field.
-     * `save` flag prevents double-saving when loading stored tasks.
-     */
-    function addTask(taskText = null, save = true) {
-        // If no taskText passed, read from input
-        if (taskText === null) {
-            taskText = taskInput.value.trim();
-        }
-
-        // Validate: non-empty
-        if (!taskText) {
-            alert('Please enter a task.');
+        // If input is empty, show alert and stop
+        if (taskText === "") {
+            alert("Please enter a task!");
             return;
         }
 
-        // Add to internal array
-        tasks.push(taskText);
+        // Step 3: Create a new list item (li)
+        const li = document.createElement('li');
+        li.textContent = taskText;
 
-        // Save to Local Storage (unless caller asked not to)
-        if (save) {
-            saveTasks();
-        }
+        // Step 4: Create a 'Remove' button for each task
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = "Remove";
+        removeBtn.className = "remove-btn";
 
-        // Re-render the list and clear input
-        renderTasks();
-        taskInput.value = '';
+        // When remove button is clicked, remove the parent <li>
+        removeBtn.onclick = function() {
+            taskList.removeChild(li);
+        };
+
+        // Step 5: Append the button to the list item, and list item to the task list
+        li.appendChild(removeBtn);
+        taskList.appendChild(li);
+
+        // Step 6: Clear the input field after adding
+        taskInput.value = "";
     }
 
-    /**
-     * Remove a task by index, update Local Storage and re-render
-     */
-    function removeTask(index) {
-        tasks.splice(index, 1);
-        saveTasks();
-        renderTasks();
-    }
+    // Step 7: Add event listeners
 
-    /**
-     * Load tasks from Local Storage and render them.
-     * Uses addTask(taskText, false) pattern in example, but here we populate
-     * the tasks array directly and render once to avoid duplicates.
-     */
-    function loadTasks() {
-        const stored = JSON.parse(localStorage.getItem('tasks') || '[]');
-        // Ensure it's an array
-        if (Array.isArray(stored)) {
-            tasks = stored;
-        } else {
-            tasks = [];
-        }
-        renderTasks();
-    }
+    // Add task when the "Add Task" button is clicked
+    addButton.addEventListener('click', addTask);
 
-    // Event listeners
-    addButton.addEventListener('click', () => addTask());
-    taskInput.addEventListener('keypress', (event) => {
+    // Add task when pressing "Enter" key inside the input field
+    taskInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
-            event.preventDefault(); // prevent side effects if any
             addTask();
         }
     });
 
-    // Load tasks from Local Storage when page loads
-    loadTasks();
 });
